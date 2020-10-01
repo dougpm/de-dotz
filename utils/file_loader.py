@@ -32,7 +32,8 @@ class FileLoader:
             assert len(self.file_names) > 0
         except AssertionError:
             raise AssertionError("No files found in {0} with {1} suffix.".format(self._directory, self._file_suffix))
-        self._file_tuple = namedtuple("FileHolder", self.file_names)
+        file_names_without_suffix = [file.strip(self._file_suffix) for file in self.file_names]
+        self._file_tuple = namedtuple("FileHolder", file_names_without_suffix)
         return self._file_tuple
         
     def _load_files_into_tuple(self):
