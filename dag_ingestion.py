@@ -1,10 +1,11 @@
 """
-A DAG le uma lista de arquivos CSV do Storage, criando tabelas para cada um deles no BigQuery.
+Essa DAG le uma lista de arquivos CSV do Storage, criando tabelas para cada um deles no BigQuery.
 """
 
 
 import os
 import datetime
+from datetime import date
 
 from airflow import configuration
 from airflow import models
@@ -16,16 +17,9 @@ from airflow.operators.dummy_operator import DummyOperator
 from dotz import utils
 
 
-YESTERDAY = datetime.datetime.combine(
-    datetime.datetime.today() - datetime.timedelta(1),
-    datetime.datetime.min.time())
-
-
-# dataset que vai receber as tabelas criadas a partir dos csvs
-bq_dataset = "landing"
 DEFAULT_DAG_ARGS = {
     'owner': 'Dotz',
-    'start_date': YESTERDAY,
+    'start_date': date(2020, 9, 29),
     'email': 'douglaspmartins0@gmail.com',
     'email_on_failure': False,
     'email_on_retry': False,
@@ -63,6 +57,9 @@ headers = file_loader.load_files(HEADERS_DIR, '.txt')
 # pasta criada dentro do bucket, contem os arquivos a serem lidos
 #TODO: usar variavel de ambiente aqui
 csv_files_path = "gs://de-dotz-2020/csvs"
+
+#TODO: usar variavel de ambiente aqui
+bq_dataset = "landing"
 
 with models.DAG(dag_id="dotz-ingestao",
                 default_args=DEFAULT_DAG_ARGS,
