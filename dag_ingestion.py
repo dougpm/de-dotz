@@ -6,11 +6,14 @@ Essa DAG le uma lista de arquivos CSV do Storage, criando tabelas para cada um d
 import os
 import datetime
 import re
+import logging
 
 from airflow import configuration
 from airflow import models
+from airflow.contrib.hooks import gcs_hook
+from airflow.utils.trigger_rule import TriggerRule
+from airflow.operators.python_operator import PythonOperator
 from airflow.contrib.operators.bigquery_operator import BigQueryOperator
-# from airflow.contrib.operators.bigquery_check_operator import BigQueryCheckOperator
 from airflow.contrib.operators.dataflow_operator import DataFlowPythonOperator
 from airflow.operators.dummy_operator import DummyOperator
 
@@ -54,10 +57,17 @@ HEADERS_DIR = os.path.join(
 file_loader = file_loader.FileLoader()
 headers = file_loader.load_files(HEADERS_DIR, '.txt')
 
-# pasta criada dentro do bucket, contem os arquivos a serem lidos
 raw_files_bucket = models.Variable.get("raw_files_bucket")
-
 bq_dataset_landing = models.Variable.get("landing_dataset")
+
+csv_files = [
+    'bill_of_materials',
+    'price_quote',
+    'comp_boss'
+]
+#tags utilizadas para mover os csvs para diretorios especificos depois de serem processados, com sucesso ou nao
+successful_tag = 'processed'
+failed_tag = 'failed'
 
 def storage_to_bq_task(filename):
 
@@ -73,21 +83,50 @@ def storage_to_bq_task(filename):
         job_name=re.sub('_', '-', filename),
         options=opt_dict)
 
+def move_to_completion_bucket(bucket, status_tag, csv_files, **kwargs):
+
+    for file in csv_files:
+        conn = gcs_hook.GoogleCloudStorageHook()
+
+        source_object = file + ".csv"
+        target_object = os.path.join(status_tag, source_object)
+
+        logging.info('Moving {} to {}'.format(
+            os.path.join(bucket, source_object),
+            os.path.join(bucket, target_object)))
+                    
+        conn.copy(bucket, source_object, bucket, target_object)
+
+        logging.info('Deleting {}'.format(os.path.join(bucket, source_object)))
+                    
+        conn.delete(bucket, source_object)
+
 
 with models.DAG(dag_id="dotz-ingestao",
                 default_args=DEFAULT_DAG_ARGS,
                 schedule_interval=None) as dag:
 
-    
-    filenames = 'bill_of_materials comp_boss price_quote'.split()
-    csv_ingestions = []
-    for file in filenames:
-        csv_ingestions.append(storage_to_bq_task(file))
+    csv_ingestion_tasks = []
+    for file in csv_files:
+        csv_ingestion_tasks.append(storage_to_bq_task(file))
 
-    dummy_task = DummyOperator(task_id="bq_query")
+    success_move_task = PythonOperator(
+        task_id='move_to_success_folder',
+        python_callable=move_to_completion_bucket,
+        op_args=[raw_files_bucket, successful_tag, csv_files],
+        provide_context=True,
+        trigger_rule=TriggerRule.ALL_SUCCESS)
 
-    for task in csv_ingestions:
-        task >> dummy_task
+    failure_move_task = PythonOperator(
+        task_id='move_to_failure_bucket',
+        python_callable=move_to_completion_bucket,
+        op_args=[raw_files_bucket, failed_tag, csv_files],
+        provide_context=True,
+        trigger_rule=TriggerRule.ALL_FAILED)
+
+    for task in csv_ingestion_tasks:
+        task >> success_move_task
+        task >> failure_move_task
 
     # bq_task = BigQueryOperator(
     #     task_id="",
