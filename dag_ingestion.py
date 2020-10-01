@@ -49,7 +49,7 @@ DATAFLOW_PIPELINE_FILE = os.path.join(
 
 HEADERS_DIR = os.path.join(
     EXTRA_FILES_DIR,
-    'headers')
+    'headers', "")
 
 file_loader = file_loader.FileLoader()
 headers = file_loader.load_files(HEADERS_DIR, '.txt')
