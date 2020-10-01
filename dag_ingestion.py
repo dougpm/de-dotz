@@ -58,7 +58,7 @@ HEADERS_DIR = os.path.join(
     'headers')
 
 file_loader = utils.file_loader.FileLoader()
-headers = file_loader.load_files(HEADERS_DIR)
+headers = file_loader.load_files(HEADERS_DIR, '.txt')
 
 # pasta criada dentro do bucket, contem os arquivos a serem lidos
 #TODO: usar variavel de ambiente aqui
