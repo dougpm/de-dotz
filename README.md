@@ -4,26 +4,30 @@
 
 Para resolução do teste, optei por utilizar as seguintes ferramentas:
 
+* Cloud Shell
+
+    Utilizei para criar toda a infraestrutura, rodar testes e sincronizao o repositório Git com o Bucket de DAGs do Composer.
+
 * Cloud Storage
 
-    > Utilizei o storage para fazer a ingestão inicial dos CSVs para o GCP.
+    Utilizei o storage para fazer a ingestão inicial dos CSVs para o GCP.
     Outra opção considerada foi fazer o upload dos CSVs para uma instância do Cloud SQL. Não segui nessa direção pois iria usar o Dataflow com Python, e acredito que usando Java seria mais natural criar essa conexão usando o conector JDBC, ~~além de aumentar consideravelmente a complexidade da solução~~.
 
 * Cloud Dataflow
 
-    > Utilizei para carregar os CSVs do Storage para o BQ, com a SDK em Python.
+    Utilizei para carregar os CSVs do Storage para o BQ, com a SDK em Python.
 
 * Cloud Composer
 
-    > Utilizei para encapsular e automatizar o pipeline.
+    Utilizei para encapsular e automatizar o pipeline.
 
 * BigQuery
 
-    > Utilizei o BQ como destino final dos dados. Como o teste envolve a criação de um dashboard e a criação de um pequeno datalake, o BQ com sua integração com o Datastudio e capacidades de Data Warehousing se mostrou a ferramenta perfeita.
+    Utilizei o BQ como destino final dos dados. Como o teste envolve a criação de um dashboard e a criação de um pequeno datalake, o BQ com sua integração com o Datastudio e capacidades de Data Warehousing se mostrou a ferramenta perfeita.
 
 * DataStudio
 
-    > Utilizei para criar o dashboard pedido.
+    Utilizei para criar o dashboard pedido.
 
 ### Implementação
 
