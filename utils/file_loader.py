@@ -42,5 +42,3 @@ class FileLoader:
         for file in self.file_names:
             with open(self._directory + file) as f:
                 yield f.read()
-
-    
