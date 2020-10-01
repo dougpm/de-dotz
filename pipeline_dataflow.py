@@ -7,10 +7,10 @@ from apache_beam.options import pipeline_options
             
 class FileHandler(object):
    
-    def __init__(self, filepath, fields):
+    def __init__(self, filepath, header):
 
         self.filepath = filepath
-        self.fields = fields.split(",")
+        self.fields = header.split(",")
 
     def parse(self, row):
 
@@ -29,8 +29,8 @@ def run(argv=None):
 
     parser.add_argument('--file_path', dest='file_path', required=False,
                         help='GCS path for the csv file')
-    parser.add_argument('--fields', dest='fields', required=False,
-                        help='Header fields on the csv')
+    parser.add_argument('--header', dest='header', required=False,
+                        help='Header on the csv')
     parser.add_argument('--destination_table_id', dest='destination_table_id', required=False,
                         help='ID of the table to be created in BigQuery')
     
@@ -38,7 +38,7 @@ def run(argv=None):
     
     p_opts = pipeline_options.PipelineOptions(pipeline_args)
 
-    file_handler = FileHandler(known_args.file_path, known_args.fields)
+    file_handler = FileHandler(known_args.file_path, known_args.header)
     schema = file_handler.create_schema()
 
     with beam.Pipeline(options=p_opts) as p:
