@@ -13,15 +13,14 @@ from airflow.contrib.operators.bigquery_check_operator import BigQueryCheckOpera
 from airflow.contrib.operators.dataflow_operator import DataFlowPythonOperator
 from airflow.operators.dummy_operator import DummyOperator
 
+import utils
+
 
 YESTERDAY = datetime.datetime.combine(
     datetime.datetime.today() - datetime.timedelta(1),
     datetime.datetime.min.time())
 
 
-gcs_bucket_name = "gs://de-dotz-2020"
-# pasta criada dentro do bucket, contem os arquivos a serem lidos
-csv_files_path = "{}/csvs".format(gcs_bucket_name)
 # dataset que vai receber as tabelas criadas a partir dos csvs
 bq_dataset = "landing"
 DEFAULT_DAG_ARGS = {
@@ -44,15 +43,26 @@ DEFAULT_DAG_ARGS = {
     }
 }
 
-EXTRA_FILES = os.path.join(
+EXTRA_FILES_DIR = os.path.join(
     configuration.get(
         'core',
         'dags_folder'),
     'dotz')
 
-CSV_TO_BQ_PIPELINE = os.path.join(
-    EXTRA_FILES,
+DATAFLOW_PIPELINE_FILE = os.path.join(
+    EXTRA_FILES_DIR,
     'pipeline_dataflow.py')
+
+HEADERS_DIR = os.path.join(
+    EXTRA_FILES_DIR,
+    'headers')
+
+file_loader = utils.file_loader.FileLoader()
+headers = file_loader.load_files(HEADERS_DIR)
+
+# pasta criada dentro do bucket, contem os arquivos a serem lidos
+#TODO: usar variavel de ambiente aqui
+csv_files_path = "gs://de-dotz-2020/csvs"
 
 with models.DAG(dag_id="dotz-ingestao",
                 default_args=DEFAULT_DAG_ARGS,
@@ -60,13 +70,13 @@ with models.DAG(dag_id="dotz-ingestao",
 
     bill_of_materials_opt = {
         'file_path': "{}/bill_of_materials.csv".format(csv_files_path),
-        'fields': "tube_assembly_id,component_id_1,quantity_1,component_id_2,quantity_2,component_id_3,quantity_3,component_id_4,quantity_4,component_id_5,quantity_5,component_id_6,quantity_6,component_id_7,quantity_7,component_id_8,quantity_8",
+        'header': headers.bill_of_materials,
         'destination_table_id': "{}.BILL_OF_MATERIALS".format(bq_dataset)   
     }
 
     bill_of_materials = DataFlowPythonOperator(
         task_id='process_bill_of_materials',
-        py_file=CSV_TO_BQ_PIPELINE,
+        py_file=DATAFLOW_PIPELINE_FILE,
         job_name='bill-of-materials',
         options=bill_of_materials_opt)
 
