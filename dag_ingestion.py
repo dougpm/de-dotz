@@ -5,7 +5,6 @@ Essa DAG le uma lista de arquivos CSV do Storage, criando tabelas para cada um d
 
 import os
 import datetime
-from datetime import date
 
 from airflow import configuration
 from airflow import models
@@ -19,7 +18,7 @@ from dotz.utils import file_loader
 
 DEFAULT_DAG_ARGS = {
     'owner': 'Dotz',
-    'start_date': date(2020, 9, 29),
+    'start_date': datetime.datetime(2020, 9, 29),
     'email': 'douglaspmartins0@gmail.com',
     'email_on_failure': False,
     'email_on_retry': False,
