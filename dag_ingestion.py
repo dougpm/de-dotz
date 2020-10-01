@@ -54,27 +54,49 @@ file_loader = file_loader.FileLoader()
 headers = file_loader.load_files(HEADERS_DIR, '.txt')
 
 # pasta criada dentro do bucket, contem os arquivos a serem lidos
-#TODO: usar variavel de ambiente aqui
-csv_files_path = "gs://de-dotz-2020/csvs"
+raw_files_bucket = models.Variable.get("raw_files_bucket")
 
-#TODO: usar variavel de ambiente aqui
-bq_dataset = "landing"
+bq_dataset_landing = models.Variable.get("landing_dataset")
 
 with models.DAG(dag_id="dotz-ingestao",
                 default_args=DEFAULT_DAG_ARGS,
                 schedule_interval=None) as dag:
 
     bill_of_materials_opt = {
-        'file_path': "{}/bill_of_materials.csv".format(csv_files_path),
+        'file_path': "{}/bill_of_materials.csv".format(raw_files_bucket),
         'header': headers.bill_of_materials,
-        'destination_table_id': "{}.BILL_OF_MATERIALS".format(bq_dataset)   
+        'destination_table_id': "{}.BILL_OF_MATERIALS".format(bq_dataset_landing)   
     }
 
     bill_of_materials = DataFlowPythonOperator(
-        task_id='process_bill_of_materials',
+        task_id='load_bill_of_materials',
         py_file=DATAFLOW_PIPELINE_FILE,
         job_name='bill-of-materials',
         options=bill_of_materials_opt)
+
+    comp_boss_opt = {
+        'file_path': "{}/comp_boss.csv".format(raw_files_bucket),
+        'header': headers.comp_boss,
+        'destination_table_id': "{}.COMP_BOSS".format(bq_dataset_landing)   
+    }
+
+    comp_boss = DataFlowPythonOperator(
+        task_id='load_comp_boss',
+        py_file=DATAFLOW_PIPELINE_FILE,
+        job_name='comp-boss',
+        options=comp_boss_opt)
+
+    price_quote_opt = {
+        'file_path': "{}/price_quote.csv".format(raw_files_bucket),
+        'header': headers.price_quote,
+        'destination_table_id': "{}.PRICE_QUOTE".format(bq_dataset_landing)   
+    }
+
+    price_quote = DataFlowPythonOperator(
+        task_id='load_price_quote',
+        py_file=DATAFLOW_PIPELINE_FILE,
+        job_name='price-quote',
+        options=price_quote_opt)
 
     # bq_task = BigQueryOperator(
     #     task_id="",
