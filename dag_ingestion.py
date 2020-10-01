@@ -84,6 +84,11 @@ with models.DAG(dag_id="dotz-ingestao",
     for file in filenames:
         csv_ingestions.append(storage_to_bq_task(file))
 
+    dummy_task = DummyOperator(task_id="bq_query")
+
+    for task in csv_ingestions:
+        task >> dummy_task
+
     # bq_task = BigQueryOperator(
     #     task_id="",
     #     use_legacy_sql=False,
