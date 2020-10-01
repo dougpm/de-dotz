@@ -18,7 +18,7 @@ YESTERDAY = datetime.datetime.combine(
     datetime.datetime.today() - datetime.timedelta(1),
     datetime.datetime.min.time())
 
-PROJECT = 'tactile-sweep-291117'
+
 gcs_bucket_name = "gs://de-dotz-2020"
 # pasta criada dentro do bucket, contem os arquivos a serem lidos
 csv_files_path = "{}/csvs".format(gcs_bucket_name)
@@ -31,16 +31,16 @@ DEFAULT_DAG_ARGS = {
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 2,
-    'project_id': PROJECT,
+    'project_id': models.Variable.get('project_id'),
     'dataflow_default_options': {
         'region': 'us-east1',
         'max_num_workers': '20',
         'machine_type': 'n1-standard-1',
         'disk_size_gb': '50',
-        'project': PROJECT,
-        'temp_location': '{0}/staging/'.format(gcs_bucket_name),
+        'project': models.Variable.get('project_id'),
+        'temp_location': models.Variable.get('staging_bucket'),
         'runner': 'DataflowRunner',
-        'service_account_email': 'douglas@tactile-sweep-291117.iam.gserviceaccount.com'
+        # 'service_account_email': 'douglas@tactile-sweep-291117.iam.gserviceaccount.com'
     }
 }
 
