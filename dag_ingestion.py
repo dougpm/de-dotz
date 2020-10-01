@@ -82,7 +82,7 @@ with models.DAG(dag_id="dotz-ingestao",
     filenames = 'bill_of_materials comp_boss price_quote'.split()
     csv_ingestions = []
     for file in filenames:
-        csv_ingestions.append(storage_to_bq_task(file, headers))
+        csv_ingestions.append(storage_to_bq_task(file))
     # bill_of_materials_opt = {
     #     'file_path': "{}/bill_of_materials.csv".format(raw_files_bucket),
     #     'header': headers.bill_of_materials,
