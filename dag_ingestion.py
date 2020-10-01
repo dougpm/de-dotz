@@ -13,7 +13,7 @@ from airflow.contrib.operators.bigquery_check_operator import BigQueryCheckOpera
 from airflow.contrib.operators.dataflow_operator import DataFlowPythonOperator
 from airflow.operators.dummy_operator import DummyOperator
 
-from utils import file_loader
+from dotz import utils
 
 
 YESTERDAY = datetime.datetime.combine(
@@ -57,7 +57,7 @@ HEADERS_DIR = os.path.join(
     EXTRA_FILES_DIR,
     'headers')
 
-file_loader = file_loader.FileLoader()
+file_loader = utils.file_loader.FileLoader()
 headers = file_loader.load_files(HEADERS_DIR, '.txt')
 
 # pasta criada dentro do bucket, contem os arquivos a serem lidos
