@@ -121,14 +121,14 @@ with models.DAG(dag_id="dotz-ingestao",
     success_move_task = PythonOperator(
         task_id='move_to_success_folder',
         python_callable=move_to_completion_bucket,
-        op_args= [gcs_bucket, csv_folder, successful_tag, csv_files],
+        op_args= [gcs_bucket, csvs_folder, successful_tag, csv_files],
         provide_context=True,
         trigger_rule=TriggerRule.ALL_SUCCESS)
 
     failure_move_task = PythonOperator(
         task_id='move_to_failure_folder',
         python_callable=move_to_completion_bucket,
-        op_args=[gcs_bucket, csv_folder, failed_tag, csv_files],
+        op_args=[gcs_bucket, csvs_folder, failed_tag, csv_files],
         provide_context=True,
         trigger_rule=TriggerRule.ALL_FAILED)
 
