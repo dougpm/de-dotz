@@ -64,6 +64,11 @@ headers = file_loader.load_files(HEADERS_DIR, '.txt')
 queries = file_loader.load_files(QUERIES_DIR, '.sql')
 
 bq_dataset_landing = models.Variable.get("landing_dataset")
+bq_dataset_production = models.Variable.get("production_dataset")
+bq_dataset_views = models.Variable.get("views_dataset")
+
+#tabela a ser criada no production_dataset, fazendo o pre-join de todas as outras e definindo schema
+joined_table = "quotes_materials_components"
 
 #pasta dentro do bucket, contendo os arquivos CSV
 csvs_folder = "csvs"
@@ -148,8 +153,13 @@ with models.DAG(dag_id="dotz-ingestao",
     create_quotes_materials_components = BigQueryOperator(
         task_id="create_quotes_materials_components",
         use_legacy_sql=False,
+        destination_dataset_table="{}.{}".format(bq_dataset_production, joined_table),
+        write_disposition="WRITE_APPEND",
+        time_partitioning={
+            'type': 'DAY',
+            'field': "quote_date"},   
         sql=queries.create_quotes_materials_components)
-                    
+
 
     for task in csv_ingestion_tasks:
         task >> success_move_task

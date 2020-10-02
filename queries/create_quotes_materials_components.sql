@@ -1,11 +1,3 @@
-CREATE OR REPLACE TABLE 
-  production.quotes_materials_components 
-  PARTITION BY
-   quote_date 
-  OPTIONS (
-   require_partition_filter = True,
-   description="Contém as informações de cada cotação, com os componentes utilizados em cada tubo e suas características") AS (
-
 WITH type_cast_comp_boss AS (
 SELECT
   component_id,
@@ -210,4 +202,3 @@ LEFT JOIN
   type_cast_comp_boss comp8
 ON
   component_id_8 = comp8.component_id
-)

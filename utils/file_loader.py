@@ -30,6 +30,7 @@ class FileLoader:
     def _create_file_tuple(self):
         
         """Creates a nameduple to hold files read, returns it"""
+        
         try:
             assert len(self.file_names) > 0
         except AssertionError:
