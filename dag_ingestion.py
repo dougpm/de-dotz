@@ -103,9 +103,9 @@ def move_to_completion_bucket(bucket_path, origin_folder, status_tag, csv_files,
     
     for file in csv_files:
         source_object = file + ".csv"
-        file_path = "{}/{}".format(origin_folder,source_object)
+        file_path = "{}/{}".format(origin_folder, source_object)
         file_blob = bucket.get_blob(file_path)
-        target_object = os.path.join(status_tag, source_object)
+        target_object = os.path.join(origin_folder, status_tag, source_object)
         
         logging.info('Moving {} to {}'.format(
             source_object,
