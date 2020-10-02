@@ -108,7 +108,6 @@ def move_to_completion_bucket(status_tag, csv_files, **kwargs):
         bucket.delete_blob(file_path)
                     
 
-
 with models.DAG(dag_id="dotz-ingestao",
                 default_args=DEFAULT_DAG_ARGS,
                 schedule_interval=None) as dag:
@@ -120,14 +119,14 @@ with models.DAG(dag_id="dotz-ingestao",
     success_move_task = PythonOperator(
         task_id='move_to_success_folder',
         python_callable=move_to_completion_bucket,
-        op_args=[raw_files_bucket, successful_tag, csv_files],
+        op_args= [successful_tag, csv_files],
         provide_context=True,
         trigger_rule=TriggerRule.ALL_SUCCESS)
 
     failure_move_task = PythonOperator(
         task_id='move_to_failure_folder',
         python_callable=move_to_completion_bucket,
-        op_args=[raw_files_bucket, failed_tag, csv_files],
+        op_args=[failed_tag, csv_files],
         provide_context=True,
         trigger_rule=TriggerRule.ALL_FAILED)
 
