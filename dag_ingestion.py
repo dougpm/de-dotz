@@ -7,6 +7,7 @@ import os
 import datetime
 import re
 import logging
+import ntpath
 
 from airflow import configuration
 from airflow import models
@@ -57,14 +58,18 @@ HEADERS_DIR = os.path.join(
 file_loader = file_loader.FileLoader()
 headers = file_loader.load_files(HEADERS_DIR, '.txt')
 
-raw_files_bucket = models.Variable.get("raw_files_bucket")
 bq_dataset_landing = models.Variable.get("landing_dataset")
+gcs_bucket = models.Variable.get("gcs_bucket")
 
 csv_files = [
     'bill_of_materials',
     'price_quote',
     'comp_boss'
 ]
+
+csvs_folder = "csvs"
+
+raw_files_path = os.path.join(gcs_bucket, csvs_folder)
 #tags utilizadas para mover os csvs para diretorios especificos depois de serem processados, com sucesso ou nao
 successful_tag = 'processed'
 failed_tag = 'failed'
@@ -72,7 +77,7 @@ failed_tag = 'failed'
 def storage_to_bq_task(filename):
 
     opt_dict = {
-        'file_path': "{}/{}.csv".format(raw_files_bucket, filename),
+        'file_path': "{}/{}.csv".format(raw_files_path, filename),
         'header': getattr(headers, filename),
         'destination_table_id': "{}.{}".format(bq_dataset_landing, filename)
     }
@@ -83,17 +88,14 @@ def storage_to_bq_task(filename):
         job_name=re.sub('_', '-', filename),
         options=opt_dict)
 
-def move_to_completion_bucket(status_tag, csv_files, **kwargs):
+def move_to_completion_bucket(bucket_name, origin_folder, status_tag, csv_files, **kwargs):
 
     storage_client = storage.Client()
-    #TODO: variavel de ambiente aqui
-    bucket = storage_client.get_bucket("de-dotz-2020")
+    bucket = storage_client.get_bucket(ntpath.basename(bucket_name))
     
     for file in csv_files:
-
         source_object = file + ".csv"
-        #TODO: criar variavel para essa pasta
-        file_path = "csvs/{}".format(source_object)
+        file_path = "{}/{}".format(origin_folder,source_object)
         file_blob = bucket.get_blob(file_path)
         target_object = os.path.join(status_tag, source_object)
         
@@ -119,14 +121,14 @@ with models.DAG(dag_id="dotz-ingestao",
     success_move_task = PythonOperator(
         task_id='move_to_success_folder',
         python_callable=move_to_completion_bucket,
-        op_args= [successful_tag, csv_files],
+        op_args= [gcs_bucket, csv_folder, successful_tag, csv_files],
         provide_context=True,
         trigger_rule=TriggerRule.ALL_SUCCESS)
 
     failure_move_task = PythonOperator(
         task_id='move_to_failure_folder',
         python_callable=move_to_completion_bucket,
-        op_args=[failed_tag, csv_files],
+        op_args=[gcs_bucket, csv_folder, failed_tag, csv_files],
         provide_context=True,
         trigger_rule=TriggerRule.ALL_FAILED)
 
