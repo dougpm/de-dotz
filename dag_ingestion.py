@@ -67,7 +67,7 @@ queries = file_loader.load_files(QUERIES_DIR, '.sql')
 
 bq_dataset_landing = models.Variable.get("landing_dataset")
 bq_dataset_production = models.Variable.get("production_dataset")
-bq_dataset_views = models.Variable.get("views_dataset")
+bq_dataset_serving = models.Variable.get("serving_dataset")
 
 #tabela a ser criada no production_dataset, fazendo o pre-join de todas as outras e definindo schema
 joined_table = "quotes_materials_components"
@@ -156,11 +156,21 @@ with models.DAG(dag_id="dotz-ingestao",
         task_id="create_quotes_materials_components",
         use_legacy_sql=False,
         destination_dataset_table="{}.{}".format(bq_dataset_production, joined_table),
-        write_disposition="WRITE_APPEND",
+        write_disposition="WRITE_TRUNCATE",
         time_partitioning={
             'type': 'DAY',
             'field': "quote_date"},   
         sql=queries.create_quotes_materials_components)
+
+    create_vw_suppliers = BigQueryOperator(
+        task_id="create_vw_suppliers",
+        use_legacy_sql=False, 
+        sql=queries.create_vw_suppliers.format(serving_dataset=bq_dataset_serving))
+
+    create_vw_tubes = BigQueryOperator(
+        task_id="create_vw_tubes",
+        use_legacy_sql=False, 
+        sql=queries.create_vw_tubes.format(serving_dataset=bq_dataset_serving))
 
 
     for task in csv_ingestion_tasks:
@@ -168,3 +178,5 @@ with models.DAG(dag_id="dotz-ingestao",
         task >> failure_move_task
 
     success_move_task >> create_quotes_materials_components
+    create_quotes_materials_components >> (create_vw_suppliers, create_vw_tubes)
+
