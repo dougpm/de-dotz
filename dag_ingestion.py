@@ -10,7 +10,7 @@ import logging
 
 from airflow import configuration
 from airflow import models
-from airflow.contrib.hooks import gcs_hook
+from google.cloud import storage
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.operators.python_operator import PythonOperator
 from airflow.contrib.operators.bigquery_operator import BigQueryOperator
@@ -83,23 +83,30 @@ def storage_to_bq_task(filename):
         job_name=re.sub('_', '-', filename),
         options=opt_dict)
 
-def move_to_completion_bucket(bucket, status_tag, csv_files, **kwargs):
+def move_to_completion_bucket(status_tag, csv_files, **kwargs):
 
+    storage_client = storage.Client()
+    #TODO: variavel de ambiente aqui
+    bucket = storage_client.get_bucket("de-dotz-2020")
+    
     for file in csv_files:
-        conn = gcs_hook.GoogleCloudStorageHook()
 
         source_object = file + ".csv"
+        #TODO: criar variavel para essa pasta
+        file_path = "csvs/{}".format(source_object)
+        file_blob = bucket.get_blob(file_path)
         target_object = os.path.join(status_tag, source_object)
-
+        
         logging.info('Moving {} to {}'.format(
             os.path.join(bucket, source_object),
             os.path.join(bucket, target_object)))
 
-        conn.copy(source_bucket="gs://de-dotz-2020", source_object="csvs/bill_of_materials.csv", destination_object="csvs/processed/bill_of_materials.csv")
+        bucket.copy_blob(file, bucket, target_object)
 
         logging.info('Deleting {}'.format(os.path.join(bucket, source_object)))
+
+        bucket.delete_blob(file_path)
                     
-        conn.delete(bucket, source_object)
 
 
 with models.DAG(dag_id="dotz-ingestao",
