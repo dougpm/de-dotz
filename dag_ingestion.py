@@ -94,8 +94,8 @@ def move_to_completion_bucket(bucket, status_tag, csv_files, **kwargs):
         logging.info('Moving {} to {}'.format(
             os.path.join(bucket, source_object),
             os.path.join(bucket, target_object)))
-                    
-        conn.copy(source_bucket=bucket, source_object=source_object, destination_object=target_object)
+
+        conn.copy(source_bucket="gs://de-dotz-2020", source_object="csvs/bill_of_materials.csv", destination_object="csvs/processed/bill_of_materials.csv")
 
         logging.info('Deleting {}'.format(os.path.join(bucket, source_object)))
                     
