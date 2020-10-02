@@ -54,9 +54,14 @@ HEADERS_DIR = os.path.join(
     EXTRA_FILES_DIR,
     'headers', "")
 
+QUERIES_DIR = os.path.join(
+    EXTRA_FILES_DIR,
+    'queries', "")
+
 #leitura dos arquivos utilizados
 file_loader = file_loader.FileLoader()
 headers = file_loader.load_files(HEADERS_DIR, '.txt')
+queries = file_loader.load_files(QUERIES_DIR, '.sql')
 
 bq_dataset_landing = models.Variable.get("landing_dataset")
 
@@ -139,15 +144,14 @@ with models.DAG(dag_id="dotz-ingestao",
         op_args=[gcs_bucket, csvs_folder, failed_tag, csv_files],
         provide_context=True,
         trigger_rule=TriggerRule.ALL_FAILED)
+    
+    create_quotes_materials_components = BigQueryOperator(
+        task_id="create_quotes_materials_components",
+        use_legacy_sql=False,
+        sql=queries.create_quotes_materials_components)
 
     for task in csv_ingestion_tasks:
         task >> success_move_task
         task >> failure_move_task
 
-    # bq_task = BigQueryOperator(
-    #     task_id="",
-    #     use_legacy_sql=False,
-    #     sql=,
-    #     write_disposition='WRITE_TRUNCATE')
-
-    # dummy = DummyOperator(task_id='')
+    success_move_task >> create_quotes_materials_components
