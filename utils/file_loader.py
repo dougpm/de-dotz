@@ -1,6 +1,7 @@
 import glob
 import ntpath
 from collections import namedtuple
+import os
 
 class FileLoader:
     def load_files(self, directory: str, file_suffix: str) -> namedtuple:
@@ -19,7 +20,7 @@ class FileLoader:
         """Reads files with the specified suffix in the specified directory, returns a list with file names"""
         
         file_names = []
-        for file_path in glob.glob(self._directory + "/*"):
+        for file_path in glob.glob(os.path.join(self._directory, "*")):
             if file_path.endswith(self._file_suffix):
                 file_name = ntpath.basename(file_path)
                 file_names.append(file_name)
@@ -41,5 +42,5 @@ class FileLoader:
         """Reads files in the specified directory, yields files read"""
         
         for file in self.file_names:
-            with open(self._directory + file) as f:
+            with open(os.path.join(self._directory, file)) as f:
                 yield f.read()
