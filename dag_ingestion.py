@@ -99,7 +99,7 @@ def move_to_completion_bucket(status_tag, csv_files, **kwargs):
         
         logging.info('Moving {} to {}'.format(
             os.path.join(source_object),
-            os.path.join(target_objecttarget_object)))
+            os.path.join(target_object)))
 
         bucket.copy_blob(file_blob, bucket, target_object)
 
