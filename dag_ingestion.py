@@ -89,7 +89,7 @@ def move_to_completion_bucket(bucket, status_tag, csv_files, **kwargs):
         conn = gcs_hook.GoogleCloudStorageHook()
 
         source_object = file + ".csv"
-        target_object = os.path.join(bucket, status_tag, source_object)
+        target_object = os.path.join(status_tag, source_object)
 
         logging.info('Moving {} to {}'.format(
             os.path.join(bucket, source_object),
