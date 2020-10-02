@@ -101,7 +101,7 @@ def move_to_completion_bucket(status_tag, csv_files, **kwargs):
             os.path.join(bucket, source_object),
             os.path.join(bucket, target_object)))
 
-        bucket.copy_blob(file, bucket, target_object)
+        bucket.copy_blob(file_blob, bucket, target_object)
 
         logging.info('Deleting {}'.format(os.path.join(bucket, source_object)))
 
