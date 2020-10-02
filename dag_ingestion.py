@@ -20,6 +20,8 @@ from airflow.operators.dummy_operator import DummyOperator
 
 from dotz.utils import file_loader
 
+#bucket criado anteriormente, usado para fazer o upload dos csvs e para arquivos temporarios do dataflow
+gcs_bucket = models.Variable.get("gcs_bucket")
 
 DEFAULT_DAG_ARGS = {
     'owner': 'Dotz',
@@ -35,12 +37,13 @@ DEFAULT_DAG_ARGS = {
         'machine_type': 'n1-standard-1',
         'disk_size_gb': '50',
         'project': models.Variable.get('project_id'),
-        'temp_location': models.Variable.get('staging_bucket'),
+        'temp_location': os.path.join(gcs_bucket, "staging"),
         'runner': 'DataflowRunner',
         # 'service_account_email': 'douglas@tactile-sweep-291117.iam.gserviceaccount.com'
     }
 }
 
+#configuracao dos diretorios contendo os arquivos utilizados
 EXTRA_FILES_DIR = os.path.join(
     configuration.get(
         'core',
@@ -55,21 +58,24 @@ HEADERS_DIR = os.path.join(
     EXTRA_FILES_DIR,
     'headers', "")
 
+#leitura dos arquivos utilizados
 file_loader = file_loader.FileLoader()
 headers = file_loader.load_files(HEADERS_DIR, '.txt')
 
 bq_dataset_landing = models.Variable.get("landing_dataset")
-gcs_bucket = models.Variable.get("gcs_bucket")
 
+#pasta dentro do bucket, contendo os arquivos CSV
+csvs_folder = "csvs"
+#lista dos arquivos a serem lidos e carregados no BQ
 csv_files = [
     'bill_of_materials',
     'price_quote',
     'comp_boss'
 ]
 
-csvs_folder = "csvs"
-
+#caminho completo dos arquivos CSV
 raw_files_path = os.path.join(gcs_bucket, csvs_folder)
+
 #tags utilizadas para mover os csvs para diretorios especificos depois de serem processados, com sucesso ou nao
 successful_tag = 'processed'
 failed_tag = 'failed'
@@ -88,10 +94,12 @@ def storage_to_bq_task(filename):
         job_name=re.sub('_', '-', filename),
         options=opt_dict)
 
-def move_to_completion_bucket(bucket_name, origin_folder, status_tag, csv_files, **kwargs):
+def move_to_completion_bucket(bucket_path, origin_folder, status_tag, csv_files, **kwargs):
 
     storage_client = storage.Client()
-    bucket = storage_client.get_bucket(ntpath.basename(bucket_name))
+    #extrai apenas o nome do bucket (de-dotz-2020) do caminho completo (gs://de-dotz-2020)
+    bucket_name = ntpath.basename(bucket_path)
+    bucket = storage_client.get_bucket(bucket_name)
     
     for file in csv_files:
         source_object = file + ".csv"
@@ -100,12 +108,12 @@ def move_to_completion_bucket(bucket_name, origin_folder, status_tag, csv_files,
         target_object = os.path.join(status_tag, source_object)
         
         logging.info('Moving {} to {}'.format(
-            os.path.join(source_object),
-            os.path.join(target_object)))
+            source_object,
+            target_object))
 
         bucket.copy_blob(file_blob, bucket, target_object)
 
-        logging.info('Deleting {}'.format(os.path.join(source_object)))
+        logging.info('Deleting {}'.format(source_object))
 
         bucket.delete_blob(file_path)
                     
