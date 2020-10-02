@@ -45,6 +45,7 @@ def run(argv=None):
         (p
             | 'Read csv file' >> beam.io.ReadFromText(known_args.file_path, skip_header_lines=1)       
             | 'Format rows to BQ' >> beam.Map(lambda r: file_handler.parse(r))
+            | 'Missing values transform' >> beam.Map(lambda r: {(field):(None if value == "NA" else value) for field, value in r.items()})
             | 'Write to BQ' >> beam.io.WriteToBigQuery(known_args.destination_table_id,
                                                 schema=schema,
                                                 write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE,
