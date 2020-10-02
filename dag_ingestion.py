@@ -89,7 +89,7 @@ def move_to_completion_bucket(bucket, status_tag, csv_files, **kwargs):
         conn = gcs_hook.GoogleCloudStorageHook()
 
         source_object = file + ".csv"
-        target_object = os.path.join(status_tag, source_object)
+        target_object = os.path.join(status_tag, "")
 
         logging.info('Moving {} to {}'.format(
             os.path.join(bucket, source_object),
@@ -118,7 +118,7 @@ with models.DAG(dag_id="dotz-ingestao",
         trigger_rule=TriggerRule.ALL_SUCCESS)
 
     failure_move_task = PythonOperator(
-        task_id='move_to_failure_bucket',
+        task_id='move_to_failure_folder',
         python_callable=move_to_completion_bucket,
         op_args=[raw_files_bucket, failed_tag, csv_files],
         provide_context=True,

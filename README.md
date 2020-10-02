@@ -60,13 +60,17 @@ gcloud composer environments create composer-dotz-01 --airflow-version 1.10.10 -
 gsutil cp %USERPROFILE%/Downloads/csvs/* gs://de-dotz-2020/csvs
 ```
 
-6. Para facilitar a organização do código, criei algumas váriaveis no Airflow:
+6. Dentro da pasta dos CSVs (gs://de-dotz-2020/csvs), criei duas outras: processed e failed. Os arquivos serão movidos para uma delas depois de serem processados, em caso de sucesso e falha, respectivamente.
+
+7. Para facilitar a organização do código, criei algumas váriaveis no Airflow:
     
     * project_id: ID do projeto criado
     * staging_bucket: Bucket para arquivos temporários do Dataflow.
     * raw_files_bucket: Bucket com os CSVs.
     * lading_dataset: Dataset criado no ponto 2.
     * production_dataset: Dataset criado também no ponto 2.
+
+Depos disso, criei a DAG no Airflow seguindo o seguinte fluxo:
 
 
 
