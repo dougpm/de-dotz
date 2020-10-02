@@ -16,7 +16,6 @@ from airflow.utils.trigger_rule import TriggerRule
 from airflow.operators.python_operator import PythonOperator
 from airflow.contrib.operators.bigquery_operator import BigQueryOperator
 from airflow.contrib.operators.dataflow_operator import DataFlowPythonOperator
-from airflow.operators.dummy_operator import DummyOperator
 
 from dotz.utils import file_loader
 
@@ -26,6 +25,9 @@ gcs_bucket = models.Variable.get("gcs_bucket")
 DEFAULT_DAG_ARGS = {
     'owner': 'Dotz',
     'start_date': datetime.datetime(2020, 9, 29),
+    'email': 'douglaspmartins0@gmail.com.br',
+    'email_on_failure': True,
+    'email_on_retry': False,
     'retries': 2,
     'project_id': models.Variable.get('project_id'),
     'dataflow_default_options': {
