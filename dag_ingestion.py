@@ -82,6 +82,8 @@ failed_tag = 'failed'
 
 def storage_to_bq_task(filename):
 
+    """Cria a task que executa o pipeline do Dataflow"""
+
     opt_dict = {
         'file_path': "{}/{}.csv".format(raw_files_path, filename),
         'header': getattr(headers, filename),
@@ -96,6 +98,8 @@ def storage_to_bq_task(filename):
 
 def move_to_completion_bucket(bucket_path, origin_folder, status_tag, csv_files, **kwargs):
 
+    """Move arquivos de uma pasta para outra dentro do bucket, dependendo do sucesso ou nao do processamento (status_tag)"""
+    
     storage_client = storage.Client()
     #extrai apenas o nome do bucket (de-dotz-2020) do caminho completo (gs://de-dotz-2020)
     bucket_name = ntpath.basename(bucket_path)
