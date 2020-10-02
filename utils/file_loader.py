@@ -19,7 +19,7 @@ class FileLoader:
         """Reads files with the specified suffix in the specified directory, returns a list with file names"""
         
         file_names = []
-        for file_path in glob.glob(self._directory + "*"):
+        for file_path in glob.glob(self._directory + "/*"):
             if file_path.endswith(self._file_suffix):
                 file_name = ntpath.basename(file_path)
                 file_names.append(file_name)

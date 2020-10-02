@@ -52,11 +52,11 @@ DATAFLOW_PIPELINE_FILE = os.path.join(
 
 HEADERS_DIR = os.path.join(
     EXTRA_FILES_DIR,
-    'headers', "")
+    'headers')
 
 QUERIES_DIR = os.path.join(
     EXTRA_FILES_DIR,
-    'queries', "")
+    'queries')
 
 #leitura dos arquivos utilizados
 file_loader = file_loader.FileLoader()
@@ -149,6 +149,7 @@ with models.DAG(dag_id="dotz-ingestao",
         task_id="create_quotes_materials_components",
         use_legacy_sql=False,
         sql=queries.create_quotes_materials_components)
+                    
 
     for task in csv_ingestion_tasks:
         task >> success_move_task
