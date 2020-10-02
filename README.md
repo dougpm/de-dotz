@@ -35,11 +35,12 @@ Depois de analizar o problema e os dados, comecei a criar a infraestrutura neces
 
 1. Um novo projeto no GCP.
 
-2. Dataset no BigQuery que recebe as primeiras tabelas criadas à partir dos CSVs e outro para receber os dados tratados:
+2. Dataset no BigQuery que recebe as primeiras tabelas criadas à partir dos CSVs, outro para receber os dados tratados e um para criação das views do dashboard:
 
 ``` bash
 bq mk --data_location us-east1 --dataset landing &&
-bq mk --data_location us-east1 --dataset production
+bq mk --data_location us-east1 --dataset production &&
+bq mk --data_location us-east1 --dataset production_views
 ```
 
 3. Bucket no Storage para fazer o upload dos CSVs e criar o local para arquivos temporários do Dataflow:
@@ -64,8 +65,9 @@ gsutil cp %USERPROFILE%/Downloads/csvs/* gs://de-dotz-2020/csvs
     
     * project_id: ID do projeto criado
     * gcs_bucket: Bucket criado no ponto 3.
-    * lading_dataset: Dataset criado no ponto 2.
-    * production_dataset: Dataset criado também no ponto 2.
+    * lading_dataset: Dataset que recebe as primeiras tabelas criadas.
+    * production_dataset: Dataset com os dados unificados e com schema definido.
+    * views_dataset: Dataset para consumo dos dados.
 
 Depos disso, criei a DAG no Airflow seguindo o seguinte fluxo:
 
