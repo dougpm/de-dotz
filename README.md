@@ -73,7 +73,7 @@ gsutil cp %USERPROFILE%/Downloads/csvs/* gs://de-dotz-2020/csvs
 
 ![fluxo](img/fluxo_dag.png)
 
-7.1 - Os CSVs são lidos do storage. Caso o processo falhe nesse estágio, os CSVs serão movidos para uma pasta chamada "failed" no mesmo bucket. Caso contrário, serão movidos para a pasta "processed" e as tabelas serão criadas no dataset __landing__.
+7.1 - Os CSVs são lidos do storage e gravados no dataset __landing__ no BQ, utilizando o Dataflow. Caso o processo falhe nesse estágio, os CSVs serão movidos para uma pasta chamada "failed" no mesmo bucket. Caso contrário, serão movidos para a pasta "processed".
 
 7.2 - As tabelas são unidas e o schema é definido. A tabela resultante é salva no dataset __production__.
 
