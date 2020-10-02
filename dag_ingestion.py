@@ -26,9 +26,6 @@ gcs_bucket = models.Variable.get("gcs_bucket")
 DEFAULT_DAG_ARGS = {
     'owner': 'Dotz',
     'start_date': datetime.datetime(2020, 9, 29),
-    'email': 'douglaspmartins0@gmail.com',
-    'email_on_failure': False,
-    'email_on_retry': False,
     'retries': 2,
     'project_id': models.Variable.get('project_id'),
     'dataflow_default_options': {
@@ -39,7 +36,6 @@ DEFAULT_DAG_ARGS = {
         'project': models.Variable.get('project_id'),
         'temp_location': os.path.join(gcs_bucket, "staging"),
         'runner': 'DataflowRunner',
-        # 'service_account_email': 'douglas@tactile-sweep-291117.iam.gserviceaccount.com'
     }
 }
 
@@ -99,7 +95,7 @@ def storage_to_bq_task(filename):
 def move_to_completion_bucket(bucket_path, origin_folder, status_tag, csv_files, **kwargs):
 
     """Move arquivos de uma pasta para outra dentro do bucket, dependendo do sucesso ou nao do processamento (status_tag)"""
-    
+
     storage_client = storage.Client()
     #extrai apenas o nome do bucket (de-dotz-2020) do caminho completo (gs://de-dotz-2020)
     bucket_name = ntpath.basename(bucket_path)
