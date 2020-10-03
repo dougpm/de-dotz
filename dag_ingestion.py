@@ -32,7 +32,7 @@ DEFAULT_DAG_ARGS = {
     'project_id': models.Variable.get('project_id'),
     'dataflow_default_options': {
         'region': 'us-east1',
-        'max_num_workers': '20',
+        'max_num_workers': '2',
         'machine_type': 'n1-standard-1',
         'disk_size_gb': '50',
         'project': models.Variable.get('project_id'),

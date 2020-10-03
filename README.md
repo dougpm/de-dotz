@@ -31,7 +31,7 @@ Para resolução do teste, optei por utilizar as seguintes ferramentas:
 
 ### Implementação
 
-Depois de analizar o problema e os dados, comecei a criar a infraestrutura necessária para o projeto:
+Depois de analisar o problema e os dados, comecei a criar a infraestrutura necessária para o projeto:
 
 1 - Um novo projeto no GCP.
 
@@ -49,11 +49,7 @@ bq mk --data_location us-east1 --dataset serving
 gsutil mb -c standard -l us-east1 gs://de-dotz-2020
 ```
 
-4 - Cluster do Composer para utilizar o Airflow:
-
-```
-gcloud composer environments create composer-dotz-01 --airflow-version 1.10.10 --location us-east1 --disk-size 20 --python-version 3 
-```
+4 - Cluster do Composer para utilizar o Airflow.
 
 5 - Fiz o download dos CSVs e utilizei o Cloud SDK para fazer o upload dos arquivos para o bucket criado:
 
@@ -83,6 +79,59 @@ gsutil cp %USERPROFILE%/Downloads/csvs/* gs://de-dotz-2020/csvs
 
 
 ## Instruções
+
+1. Crie três Datasets no BigQuery:
+    * landing
+    * production
+    * serving
+
+2. Crie um bucket no Storage.
+
+3. Crie uma pasta no bucket criado e faça o upload dos arquivos csv para ela.
+
+4. Crie um cluster no Composer.
+
+5. No webserver do Airflow, crie as variáveis:
+    * project_id: ID do projeto que está sendo utilizado.
+    * gcs_bucket: Caminho do Bucket criado no ponto 2. (gs://nome-do-bucket)
+    * lading_dataset: landing (ou outro dataset no BQ).
+    * production_dataset: production (ou outro dataset no BQ).
+    * serving_dataset: serving (ou outro dataset no BQ).
+
+6. No Cloud Shell, faça o _git clone_ do repositório: https://github.com/dougpm/de-dotz
+
+7. Abra o editor. No arquivo dag_ingestion.py, na linha 76, coloque o nome da pasta criada no bucket, contendo os arquivos.
+
+``` python
+csvs_folder = "NOME_DA_PASTA_CRIADA"
+```
+
+8. Coloque a pasta de-dotz no bucket de DAGs do Composer e execute a DAG (certificar-se de que a API do Dataflow esta ativada). O script sync_composer.sh pode ser utilizado. Para isso, basta alterar o arquivo com o nome do bucket do Composer.
+
+``` bash
+#!/bin/bash
+
+cd de-dotz
+git pull https://github.com/dougpm/de-dotz
+gsutil -m rsync -d -r $HOME/de-dotz/ gs://BUCKET_DO_COMPOSER_AQUI/dags/dotz
+```
+
+E depois rodar o script:
+
+``` bash
+cd $HOME &&
+mv de-dotz/sync_composer.sh . &&
+chmod +x sync_composer.sh &&
+./sync_composer.sh
+```
+
+9. Depois disso, todas as tabelas estarão criadas no BigQuery.
+
+
+
+
+
+
 
 
 
