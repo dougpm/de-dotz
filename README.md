@@ -11,7 +11,7 @@ Para resolução do teste, optei por utilizar as seguintes ferramentas:
 * Cloud Storage
 
     Utilizei o storage para fazer a ingestão inicial dos CSVs para o GCP.
-    Outra opção considerada foi fazer o upload dos CSVs para uma instância do Cloud SQL. Não segui nessa direção pois iria usar o Dataflow com Python, e acredito que usando Java seria mais natural criar essa conexão usando o conector JDBC, ~~além de aumentar consideravelmente a complexidade da solução~~.
+    Outra opção considerada foi fazer o upload dos CSVs para uma instância do Cloud SQL. Não segui nessa direção pois iria usar o Dataflow com Python, e acredito que usando Java seria mais natural criar essa conexão usando o conector JDBC.
 
 * Cloud Dataflow
 
