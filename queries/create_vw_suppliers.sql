@@ -4,7 +4,7 @@ SELECT
  COUNT(*) AS number_of_quotes,
  SUM(quantity) as quantity
 FROM
-  `tactile-sweep-291117.production.quotes_materials_components`
+  {production_dataset}.quotes_materials_components
 WHERE
   quote_date BETWEEN "2014-01-01" AND "2017-01-01" 
 GROUP BY supplier

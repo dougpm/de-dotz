@@ -160,17 +160,21 @@ with models.DAG(dag_id="dotz-ingestao",
         time_partitioning={
             'type': 'DAY',
             'field': "quote_date"},   
-        sql=queries.create_quotes_materials_components)
+        sql=queries.create_quotes_materials_components.format(landing_dataset=bq_dataset_landing))
 
     create_vw_suppliers = BigQueryOperator(
         task_id="create_vw_suppliers",
         use_legacy_sql=False, 
-        sql=queries.create_vw_suppliers.format(serving_dataset=bq_dataset_serving))
+        sql=queries.create_vw_suppliers.format(
+            serving_dataset=bq_dataset_serving,
+            production_dataset=bq_dataset_production))
 
     create_vw_tubes = BigQueryOperator(
         task_id="create_vw_tubes",
         use_legacy_sql=False, 
-        sql=queries.create_vw_tubes.format(serving_dataset=bq_dataset_serving))
+        sql=queries.create_vw_tubes.format(
+            serving_dataset=bq_dataset_serving,
+            production_dataset=bq_dataset_production))
 
 
     for task in csv_ingestion_tasks:

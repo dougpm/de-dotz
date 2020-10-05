@@ -16,7 +16,7 @@ SELECT
   orientation,
   CAST(weight AS FLOAT64) AS weight
 FROM
-  landing.comp_boss
+  {landing_dataset}.comp_boss
 
 )
 
@@ -165,9 +165,9 @@ SELECT
   comp8.orientation AS c8_orientation,
   comp8.weight AS c8_weight,
 FROM
-  landing.price_quote price
+  {landing_dataset}.price_quote price
 LEFT JOIN
-  landing.bill_of_materials materials
+  {landing_dataset}.bill_of_materials materials
 USING
   (tube_assembly_id)
 LEFT JOIN
